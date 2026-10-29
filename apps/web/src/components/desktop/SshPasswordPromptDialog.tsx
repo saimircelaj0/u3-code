@@ -158,9 +158,9 @@ function ActiveSshPasswordPrompt({
         <DialogHeader>
           <DialogTitle>SSH verification required</DialogTitle>
           <DialogDescription>
-            Enter the password or verification code required by <code>{target}</code>. U3 Code
+            Enter the password or verification code required by <code>{target}</code>. T3 Code
             passes your response to the local SSH process and keeps it in memory to reuse for this
-            host. U3 Code does not write it to disk.
+            host. T3 Code does not write it to disk.
           </DialogDescription>
         </DialogHeader>
         <DialogPanel scrollFade={false}>

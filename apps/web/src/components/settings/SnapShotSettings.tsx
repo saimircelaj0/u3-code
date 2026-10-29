@@ -255,7 +255,7 @@ export function SnapShotSettings() {
   const shortcutStatus = recording
     ? "Press your shortcut. Esc cancels."
     : candidateConflict
-      ? `U3 Code already uses this for "${commandLabel(candidateConflict)}".`
+      ? `T3 Code already uses this for "${commandLabel(candidateConflict)}".`
       : shortcutCheck.status === "checking"
         ? "Checking shortcut…"
         : shortcutCheck.availability
@@ -304,7 +304,7 @@ export function SnapShotSettings() {
     const verified = await settlePromise(async () => {
       if (state?.macPermissions) {
         saveSnapShotSetupResume(wizard?.wasEnabled ?? settings.snapShotEnabled);
-        if (!bridge?.setupSnapShot) throw new Error("Restart U3 Code to finish capture setup.");
+        if (!bridge?.setupSnapShot) throw new Error("Restart T3 Code to finish capture setup.");
         await bridge.setupSnapShot("test-mac-capture");
       }
       if (state?.mode === "direct")

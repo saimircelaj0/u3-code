@@ -23,7 +23,7 @@ const environmentFor = (
     homeDirectory: input.home,
     baseDir: input.baseDir,
     stateDir: path.join(input.baseDir, "userdata"),
-    serverRoot: "/opt/U3 Code/resources/app.asar",
+    serverRoot: "/opt/T3 Code/resources/app.asar",
     appImagePath: Option.none(),
   } as unknown as DesktopEnvironment.DesktopEnvironment["Service"]);
 
@@ -34,7 +34,7 @@ const commandIn = (
   Effect.gen(function* () {
     const path = yield* Path.Path;
     const fs = yield* FileSystem.FileSystem;
-    const baseDir = input.baseDir ?? path.join(input.home, ".u3");
+    const baseDir = input.baseDir ?? path.join(input.home, ".t3");
     yield* fs.makeDirectory(path.join(baseDir, "userdata"), { recursive: true });
     const make = DesktopCliCommand.make.pipe(
       Effect.provideService(
@@ -98,7 +98,7 @@ it.layer(NodeServices.layer)("DesktopCliCommand", (it) => {
       const path = yield* Path.Path;
       const home = yield* fs.makeTempDirectoryScoped();
       const command = yield* commandIn({ home });
-      const link = path.join(home, ".local", "bin", "u3");
+      const link = path.join(home, ".local", "bin", "t3");
 
       expect(yield* command.state).toEqual({
         supported: true,
@@ -108,33 +108,33 @@ it.layer(NodeServices.layer)("DesktopCliCommand", (it) => {
       });
       const installed = yield* command.install;
       expect(installed.installedPath).toBe(link);
-      expect(installed.launcherPath).toBe(path.join(home, ".u3", "bin", "u3"));
-      expect(yield* fs.readLink(link)).toBe(path.join(home, ".u3", "bin", "u3"));
+      expect(installed.launcherPath).toBe(path.join(home, ".t3", "bin", "t3"));
+      expect(yield* fs.readLink(link)).toBe(path.join(home, ".t3", "bin", "t3"));
       expect((yield* command.install).installedPath).toBe(link);
 
       expect((yield* command.uninstall).installedPath).toBeNull();
       expect(yield* fs.exists(link)).toBe(false);
-      expect(yield* fs.exists(path.join(home, ".u3", "bin", "u3"))).toBe(true);
+      expect(yield* fs.exists(path.join(home, ".t3", "bin", "t3"))).toBe(true);
     }).pipe(Effect.scoped),
   );
 
-  it.effect("never replaces or removes a u3 it did not create", () =>
+  it.effect("never replaces or removes a t3 it did not create", () =>
     Effect.gen(function* () {
       const fs = yield* FileSystem.FileSystem;
       const path = yield* Path.Path;
       const home = yield* fs.makeTempDirectoryScoped();
       const command = yield* commandIn({ home });
-      const theirs = path.join(home, ".local", "bin", "u3");
+      const theirs = path.join(home, ".local", "bin", "t3");
       yield* fs.makeDirectory(path.dirname(theirs), { recursive: true });
-      yield* fs.writeFileString(theirs, "npm's u3\n");
+      yield* fs.writeFileString(theirs, "npm's t3\n");
       yield* fs.makeDirectory(path.join(home, "bin"), { recursive: true });
-      yield* fs.symlink(path.join(home, "gone"), path.join(home, "bin", "u3"));
+      yield* fs.symlink(path.join(home, "gone"), path.join(home, "bin", "t3"));
 
       const error = yield* Effect.flip(command.install);
-      expect(error.message).toContain("Another u3 command is already installed");
+      expect(error.message).toContain("Another t3 command is already installed");
       yield* command.uninstall;
-      expect(yield* fs.readFileString(theirs)).toBe("npm's u3\n");
-      expect(yield* fs.readLink(path.join(home, "bin", "u3"))).toBe(path.join(home, "gone"));
+      expect(yield* fs.readFileString(theirs)).toBe("npm's t3\n");
+      expect(yield* fs.readLink(path.join(home, "bin", "t3"))).toBe(path.join(home, "gone"));
     }).pipe(Effect.scoped),
   );
 
@@ -143,41 +143,41 @@ it.layer(NodeServices.layer)("DesktopCliCommand", (it) => {
       const fs = yield* FileSystem.FileSystem;
       const path = yield* Path.Path;
       const home = yield* fs.makeTempDirectoryScoped();
-      const before = yield* commandIn({ home, baseDir: path.join(home, "old-u3") });
+      const before = yield* commandIn({ home, baseDir: path.join(home, "old-t3") });
       const link = (yield* before.install).installedPath;
 
-      const after = yield* commandIn({ home, baseDir: path.join(home, "new-u3") });
+      const after = yield* commandIn({ home, baseDir: path.join(home, "new-t3") });
       expect((yield* after.state).installedPath).toBe(link);
       expect((yield* after.install).installedPath).toBe(link);
-      expect(yield* fs.readLink(link!)).toBe(path.join(home, "new-u3", "bin", "u3"));
+      expect(yield* fs.readLink(link!)).toBe(path.join(home, "new-t3", "bin", "t3"));
       yield* after.uninstall;
-      expect(yield* fs.exists(path.join(home, ".local", "bin", "u3"))).toBe(false);
-      expect(yield* fs.exists(path.join(home, "bin", "u3"))).toBe(false);
+      expect(yield* fs.exists(path.join(home, ".local", "bin", "t3"))).toBe(false);
+      expect(yield* fs.exists(path.join(home, "bin", "t3"))).toBe(false);
     }).pipe(Effect.scoped),
   );
 
-  it.effect("refuses to install behind another u3 that runs first", () =>
+  it.effect("refuses to install behind another t3 that runs first", () =>
     Effect.gen(function* () {
       const fs = yield* FileSystem.FileSystem;
       const path = yield* Path.Path;
       const home = yield* fs.makeTempDirectoryScoped();
       const shadow = path.join(home, "shadow");
       yield* fs.makeDirectory(shadow);
-      yield* fs.writeFileString(path.join(shadow, "u3"), "#!/bin/sh\n", { mode: 0o755 });
+      yield* fs.writeFileString(path.join(shadow, "t3"), "#!/bin/sh\n", { mode: 0o755 });
       process.env.PATH = [shadow, path.join(home, ".local", "bin")].join(":");
 
       const command = yield* commandIn({ home });
-      const theirs = path.join(shadow, "u3");
+      const theirs = path.join(shadow, "t3");
       expect((yield* command.state).shadowedBy).toBe(theirs);
       const error = yield* Effect.flip(command.install);
       expect(error.message).toContain(theirs);
-      expect(yield* fs.exists(path.join(home, ".local", "bin", "u3"))).toBe(false);
+      expect(yield* fs.exists(path.join(home, ".local", "bin", "t3"))).toBe(false);
 
       yield* fs.remove(theirs);
       const installed = yield* command.install;
       expect(installed).toMatchObject({
         onPath: true,
-        installedPath: path.join(home, ".local", "bin", "u3"),
+        installedPath: path.join(home, ".local", "bin", "t3"),
       });
       expect(installed.shadowedBy).toBeUndefined();
     }).pipe(Effect.scoped),
@@ -198,8 +198,8 @@ it.layer(NodeServices.layer)("DesktopCliCommand", (it) => {
 
       registry.failReads = false;
       const launcherDir = DesktopCliShim.launcherPath(
-        environmentFor(yield* Path.Path, { home, baseDir: `${home}/.u3`, platform: "win32" }),
-      ).replace(/[\\/]u3\.cmd$/, "");
+        environmentFor(yield* Path.Path, { home, baseDir: `${home}/.t3`, platform: "win32" }),
+      ).replace(/[\\/]t3\.cmd$/, "");
       yield* command.install;
       expect(registry.path).toBe(`${userPath};${launcherDir}`);
       yield* command.uninstall;
@@ -214,7 +214,7 @@ it.layer(NodeServices.layer)("DesktopCliCommand", (it) => {
       const home = yield* fs.makeTempDirectoryScoped();
       const launcherDir = path.dirname(
         DesktopCliShim.launcherPath(
-          environmentFor(path, { home, baseDir: path.join(home, ".u3"), platform: "win32" }),
+          environmentFor(path, { home, baseDir: path.join(home, ".t3"), platform: "win32" }),
         ),
       );
       const userPath = `C:\\Tools;${launcherDir}`;

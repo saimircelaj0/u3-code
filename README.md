@@ -1,15 +1,24 @@
-# U3 Code
+# U3 — local T3 Code fixes
 
-Personal desktop fork of [T3 Code](https://github.com/pingdotgg/t3code), based on v0.1.3.
-Includes bounded long-link rendering to prevent a long raw URL from creating thousands of DOM elements.
+This repository saves our fixes for [T3 Code](https://github.com/pingdotgg/t3code). **U3 is not a separate installed application.** The application keeps T3 Code's name, identity, data directory and existing server.
 
-The macOS app is named **U3 Code**, uses `com.saimircelaj.u3code`, stores server data in `~/.u3`, and uses an independent `u3code-v1` Electron profile. It does not migrate or run T3 Code's live sessions. Add an existing T3 environment through the app to work with its conversations without duplicating its agents. The bundled CLI launcher is `u3`; the underlying API and configuration variable names remain compatible with T3 Code.
+The current branch is based on upstream v0.1.3 and replaces per-character markdown link elements with CSS wrapping. Browser regression tests cover long plain and formatted links, preserving their text, destination and wrapping.
 
-Local builds are not Apple-notarized. Passkey signing requires a provisioning profile for this fork; T3 Connect is an upstream service, not provided by this fork. Updates target this repository's releases, not upstream T3 releases. An unsigned local macOS build must be ad-hoc signed after extraction with `codesign --force --deep --preserve-metadata=entitlements --sign - "U3 Code.app"`, then verified with `codesign --verify --deep --strict "U3 Code.app"`; this is not Apple notarization.
+## Apply the qualified local patch on macOS
 
-Build on macOS with `T3CODE_DESKTOP_UPDATE_REPOSITORY=saimircelaj0/u3-code vp run dist:desktop:artifact --platform mac --target zip --arch arm64 --build-version 0.1.3-u3.1`.
+`scripts/prepare-local-t3-fix.py` prepares a copy of the official T3 Code 0.1.3 app. It refuses an unexpected renderer hash, preserves all archive offsets and every other archive payload, updates integrity hashes and verifies a local ad-hoc signature. The original Apple signature cannot cover modified code; Apple-associated domains, passkeys and keychain groups are not granted by this local signature. A future app launch may require authorization or sign-in again. Official updates can replace the local fix.
 
-Upstream's MIT license and notices remain included. Original project documentation follows.
+```sh
+python3 scripts/prepare-local-t3-fix.py \
+  --source '/Applications/T3 Code (Beta).app' \
+  --output "$HOME/Library/Application Support/U3 Code/prepared/T3 Code (Beta).app"
+```
+
+`--activate` additionally exchanges the verified app directories atomically and preserves the original under `backups/`. Activation refuses a running T3 app. Quit T3 before activation and relaunch it afterwards: Electron retains archive and module caches across window reloads. This mechanism is specific to the pinned asset, not a general updater. Check the running app after activation; preparation or a passing test alone is not proof of successful activation.
+
+The generated `verification.json` records the exact artifact hashes and backup location. It contains no chat data or credentials. Keep the original backup until the modified app has been validated.
+
+Upstream's MIT license and documentation follow.
 
 ---
 
