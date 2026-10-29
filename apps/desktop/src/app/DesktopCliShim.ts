@@ -9,7 +9,7 @@ import { makeComponentLogger } from "./DesktopObservability.ts";
 // AppImage mounts change each run; the launcher must mount the image itself.
 const { logInfo, logWarning } = makeComponentLogger("desktop-cli-shim");
 
-export const MARKER = "Written by T3 Code: runs the desktop app's bundled t3 CLI.";
+export const MARKER = "Written by U3 Code: runs the desktop app's bundled u3 CLI.";
 
 const SERVER_ENTRY = "apps/server/dist/bin.mjs";
 
@@ -18,7 +18,7 @@ const shellWord = (value: string) => `'${value.replaceAll("'", `'"'"'`)}'`;
 const cmdText = (value: string) => value.replaceAll("%", "%%");
 const cmdWord = (value: string) => `"${cmdText(value)}"`;
 
-const MOVED = "T3 Code has moved or been removed. Open the app once to update this command.";
+const MOVED = "U3 Code has moved or been removed. Open the app once to update this command.";
 
 export type CliShimTarget =
   | { readonly kind: "appimage"; readonly appImage: string; readonly executableName: string }
@@ -116,7 +116,7 @@ export const launcherPath = (environment: DesktopEnvironment.DesktopEnvironment[
   environment.path.join(
     environment.baseDir,
     "bin",
-    environment.platform === "win32" ? "t3.cmd" : "t3",
+    environment.platform === "win32" ? "u3.cmd" : "u3",
   );
 
 export const install = Effect.gen(function* () {
@@ -142,7 +142,7 @@ export const install = Effect.gen(function* () {
   return yield* Effect.gen(function* () {
     const existing = yield* fs.readFileString(shimPath).pipe(Effect.option);
     if (Option.isSome(existing) && !existing.value.includes(MARKER)) {
-      yield* logWarning("leaving a t3 launcher the app did not write", { shimPath });
+      yield* logWarning("leaving a u3 launcher the app did not write", { shimPath });
       return Option.none<string>();
     }
     if (Option.getOrUndefined(existing) !== content) {
@@ -150,12 +150,12 @@ export const install = Effect.gen(function* () {
       const staging = `${shimPath}.${process.pid}.tmp`;
       yield* fs.writeFileString(staging, content, { mode: 0o755 });
       yield* fs.rename(staging, shimPath);
-      yield* logInfo("installed t3 launcher", { shimPath });
+      yield* logInfo("installed u3 launcher", { shimPath });
     }
     return Option.some(shimPath);
   }).pipe(
     Effect.catchCause((cause) =>
-      logWarning("could not install t3 launcher", { shimPath, cause: Cause.pretty(cause) }).pipe(
+      logWarning("could not install u3 launcher", { shimPath, cause: Cause.pretty(cause) }).pipe(
         Effect.as(Option.none<string>()),
       ),
     ),
